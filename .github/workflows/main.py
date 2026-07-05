@@ -1,8 +1,21 @@
+import sys
+import types
+
+if 'wsgiref' not in sys.modules:
+    _wsgiref = types.ModuleType('wsgiref')
+    _wsgiref_simple_server = types.ModuleType('wsgiref.simple_server')
+    _wsgiref_simple_server.WSGIServer = None
+    _wsgiref_simple_server.WSGIRequestHandler = None
+    _wsgiref_simple_server.make_server = lambda *args, **kwargs: None
+    _wsgiref.simple_server = _wsgiref_simple_server
+    sys.modules['wsgiref'] = _wsgiref
+    sys.modules['wsgiref.simple_server'] = _wsgiref_simple_server
+# ===================================
+
 import os
 import sys
 import json
 import base64
-import platform
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import flet as ft
