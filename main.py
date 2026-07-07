@@ -2,16 +2,45 @@ import sys
 import types
 
 if 'wsgiref' not in sys.modules:
+    # Главный модуль wsgiref (как пакет)
     _wsgiref = types.ModuleType('wsgiref')
-    _wsgiref_simple_server = types.ModuleType('wsgiref.simple_server')
-    _wsgiref_simple_server.WSGIServer = None
-    _wsgiref_simple_server.WSGIRequestHandler = None
-    _wsgiref_simple_server.make_server = lambda *args, **kwargs: None
-    _wsgiref.simple_server = _wsgiref_simple_server
+    _wsgiref.__path__ = []  # ← ВАЖНО: делает его пакетом!
+    _wsgiref.__package__ = 'wsgiref'
     sys.modules['wsgiref'] = _wsgiref
-    sys.modules['wsgiref.simple_server'] = _wsgiref_simple_server
-# ===================================
 
+    # Подмодуль wsgiref.simple_server
+    _simple_server = types.ModuleType('wsgiref.simple_server')
+    _simple_server.WSGIServer = type('WSGIServer', (), {})
+    _simple_server.WSGIRequestHandler = type('WSGIRequestHandler', (), {})
+    _simple_server.make_server = lambda *a, **kw: None
+    _simple_server.__package__ = 'wsgiref'
+    sys.modules['wsgiref.simple_server'] = _simple_server
+    _wsgiref.simple_server = _simple_server
+
+    # Подмодуль wsgiref.util
+    _util = types.ModuleType('wsgiref.util')
+    _util.__package__ = 'wsgiref'
+    _util.request_uri = lambda *a, **kw: ''
+    _util.shift_path_info = lambda *a, **kw: ''
+    _util.setup_testing_defaults = lambda *a, **kw: None
+    sys.modules['wsgiref.util'] = _util
+    _wsgiref.util = _util
+
+    # Подмодуль wsgiref.headers
+    _headers = types.ModuleType('wsgiref.headers')
+    _headers.Headers = type('Headers', (), {'__init__': lambda self, *a, **kw: None})
+    _headers.__package__ = 'wsgiref'
+    sys.modules['wsgiref.headers'] = _headers
+    _wsgiref.headers = _headers
+
+    # Подмодуль wsgiref.handlers
+    _handlers = types.ModuleType('wsgiref.handlers')
+    _handlers.BaseHandler = type('BaseHandler', (), {})
+    _handlers.SimpleHandler = type('SimpleHandler', (), {})
+    _handlers.__package__ = 'wsgiref'
+    sys.modules['wsgiref.handlers'] = _handlers
+    _wsgiref.handlers = _handlers
+# ===================================
 import os
 import sys
 import json
